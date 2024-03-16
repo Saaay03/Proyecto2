@@ -7,19 +7,23 @@ using JetBrains.Annotations;
 
 public class LessonContainer : MonoBehaviour
 {
+    //DEfine el número de lecciones, la leccion actual y si todas las lecciones se realizaron
     [Header ("GameObject Configuration")]
     public int Lection = 0;
     public int CurrentLession = 0;
     public int TotalLessions = 0;
     public bool AreAllLessonsComplete = false;
 
+    //Configura el titulo y el texto que contiene cada leccion
     [Header("UICharInfo Configuration")]
     public TMP_Text StageTitle;
     public TMP_Text LessonStage;
 
+    //Contenedor de las lecciones
     [Header("External GameObject Configuration")]
     public GameObject lessonContainer;
 
+    //Administra las lecciones a través de un scriptable object
     [Header("Lesson Data")]
     public ScriptableObject lessonData;
 
@@ -36,6 +40,7 @@ public class LessonContainer : MonoBehaviour
         }
     }
 
+    //Actualiza las lecciones en la interfaz
     public void OnUpdateUI()
     {
         if (StageTitle != null || LessonStage !=null) 

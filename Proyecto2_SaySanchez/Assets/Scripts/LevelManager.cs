@@ -12,14 +12,20 @@ public class LevelManager : MonoBehaviour
 
     [Header("User Interface")]
     public TMP_Text QuestionTxt;
+    //public TMP_Text LivesTxt;
     public List<Option> Options;
+    public GameObject CheckButton;
+    public GameObject AnswerContainer;
+    public Color Green;
+    public Color Red;
 
     [Header("GameConfiguration")]
     public int questionAmount = 0;
     public int currentQuestion = 0;
     public string question;
     public string correctAnswer;
-    public string anwerFromPlayer;
+    public int answerFromPlayer = 9;
+    public int lives = 5;
 
     [Header("Current Lesson")]
     public Leccion currentLesson;
@@ -43,11 +49,12 @@ public class LevelManager : MonoBehaviour
         questionAmount = Lesson.leccionList.Count;
         //Cargar la primer pregunta
         LoadQuestion();
+        CheckPlayerState();
     }
     private void LoadQuestion()
     {
         //Aseguramos que la pregunta actual este dentro de los limites
-        if (currentQuestion < questionAmount) 
+        if (currentQuestion < questionAmount)
         {
             //Establecemos la leccion actual
             currentLesson = Lesson.leccionList[currentQuestion];
@@ -57,14 +64,12 @@ public class LevelManager : MonoBehaviour
             correctAnswer = currentLesson.options[currentLesson.correctAnswer];
             //Establecemos la pregunta en UI
             QuestionTxt.text = question;
-        //Establecemos las opciones
-        //Options[0].transform.GetChild(0).GetComponent<TMP_Text>().text = currentLesson.options[0];
-            foreach (string option in currentLesson.options)
+            //Establecemos las opciones
+            for (int i = 0; i < currentLesson.options.Count; i++)
             {
-                foreach (Option opt in Options)
-                {
-                    opt.OptionName = option;
-                }
+                Options[i].GetComponent<Option>().OptionName = currentLesson.options[i];
+                Options[i].GetComponent<Option>().OptionID = i;
+                Options[i].GetComponent<Option>().UpdateText();
             }
         }
         else
@@ -75,18 +80,70 @@ public class LevelManager : MonoBehaviour
     }
     public void NextQuestion()
     {
+    if (CheckPlayerState())
+    {
         if (currentQuestion < questionAmount)
-        { 
-        //Incrementamos el indice de la pregunta actual
-        currentQuestion++;
-        //Cargar la nueva pregunta
-        LoadQuestion();
-        }
+        {
+                //Revisamos si la respuesta es correcta o no
+                bool isCorrect = currentLesson.options[answerFromPlayer] == correctAnswer;
+                AnswerContainer.SetActive(true);
+                if (isCorrect)
+                {
+                    AnswerContainer.GetComponent<Image>().color = Green;
+                    Debug.Log("Respuesta Correcta. " + question + " : " + correctAnswer);
+                }
+                else
+                {
+                    lives--;
+                    AnswerContainer.GetComponent<Image>().color = Red;
+                    Debug.Log("Respuesta Incorrecta. " + question + " : " + correctAnswer);
+                }
+                //Actualizamos el contador de vida
+                //LivesTxt.text = LivesTxt.ToString();
+                //Incrementamos el indice de la pregunta actual
+                currentQuestion++;
+                //Mostrar el resultado durante un tiempo
+                StartCoroutine(ShowResultAndLoadQuestion(isCorrect));
+                //Reset answer from player
+                answerFromPlayer = 9;
+                }
         else
         {
             //Cambio de escena
         }
     }
+    }
 
-    public void Set
+    private IEnumerator ShowResultAndLoadQuestion(bool isCorrect)
+    {
+        //Ajusta el tiempo que deseas mostar el resultado
+        yield return new WaitForSeconds(2.5f);
+        //Ocultar el contenedor de respuestas
+        AnswerContainer.SetActive(false);
+        //Cargar la nueva pregunta
+        LoadQuestion();
+        //Activar el botón después de mostrar el resultado
+        CheckPlayerState();
+    }
+    public void SetPlayerAnswer(int _answer)
+    {
+        answerFromPlayer = _answer;
+    }
+
+    //Hace que el boton se vuelva de color gris si el jugador no ha seleccionado una opcion
+    public bool CheckPlayerState()
+    {
+        if (answerFromPlayer != 9) 
+        {
+            CheckButton.GetComponent<Button>().interactable = true;
+            CheckButton.GetComponent<Image>().color = Color.white;
+            return true;
+        }
+        else
+        {
+            CheckButton.GetComponent<Button>().interactable = false;
+            CheckButton.GetComponent<Image>().color = Color.grey;
+            return false;
+        }
+    }
 }
